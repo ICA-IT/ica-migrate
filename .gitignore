@@ -64,3 +64,7 @@ dkms.conf
 *.com
 *.sys
 *.res
+
+# special ignore for ica-migrate - ignore all data in CLIENT_DATA/files folder
+CLIENT_DATA/files/
+
