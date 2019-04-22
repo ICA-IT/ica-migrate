@@ -1,0 +1,58 @@
+﻿<?xml version='1.0' encoding='utf-8' standalone='yes'?>
+<assembly
+    xmlns="urn:schemas-microsoft-com:asm.v3"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    manifestVersion="1.0"
+    >
+  <assemblyIdentity
+      language="neutral"
+      name="Microsoft-Windows-shmig"
+      processorArchitecture="*"
+      publicKeyToken=""
+      version="0.0.0.0"
+      versionScope="nonSxS"
+      />
+  <migration scope="Upgrade,MigWiz,USMT"
+      replacementVersionRange="6.0-10.0.14890"
+      replacementSettingsVersionRange="0"
+      settingsVersion="0"
+      >
+    <machineSpecific>
+      <migXml xmlns="">
+        <plugin
+            classId="{526D451C-721A-4b97-AD34-DCE5D8CD22C5}"
+            file="Microsoft-Windows-shmig\shmig.dll"
+            offlineApply="yes"
+            />
+        <rules context="System">
+          <include>
+            <objectSet>
+              <pattern type="Registry">HKLM\Software\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema\* [*]</pattern>
+              <pattern type="Registry">HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema\* [*]</pattern>
+            </objectSet>
+          </include>
+          <!-- move PropertySchema registrations to migrated node, this is essentially the "gather" phase for PropertySchema Migration. -->
+          <locationModify script="MigXmlHelper.RelativeMove(&apos;HKLM\Software\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema&apos;,&apos;HKLM\Software\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema.Migrated&apos;)">
+            <objectSet>
+              <pattern type="Registry">HKLM\Software\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema\* [*]</pattern>
+            </objectSet>
+          </locationModify>
+          <locationModify script="MigXmlHelper.RelativeMove(&apos;HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema&apos;,&apos;HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema.Migrated&apos;)">
+            <objectSet>
+              <pattern type="Registry">HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\PropertySystem\PropertySchema\* [*]</pattern>
+            </objectSet>
+          </locationModify>
+        </rules>
+      </migXml>
+    </machineSpecific>
+    <migXml xmlns="">
+      <plugin
+          classId="{050ed09e-a530-41e6-8ac9-a9a96e74a2c1}"
+          file="Microsoft-Windows-shmig\shmig.dll"
+          offlineApply="yes"
+          />
+    </migXml>
+  </migration>
+</assembly>
+

@@ -1,0 +1,53 @@
+; Copyright (c) uib gmbh (www.uib.de)
+; This sourcecode is owned by uib gmbh
+; and published under the Terms of the General Public License.
+; credits: http://www.opsi.org/en/credits/
+
+include_append "%ScriptPath%\check_nsis_exitcode.opsiscript"
+
+DefVar $found$
+DefVar $UninstallProgram$
+
+Set $found$     = "false"
+Set $MsiId$     = ''
+
+;-----------------------------------------------------
+
+; case on deleting user files ============================================================
+; "keep files"
+   if ($PROP_keepfiles$ = "true")
+       comment "Delete account but keep files"
+       DOSInAnIconUserdel1
+   endif
+
+; "delete files"
+   if ($PROP_keepfiles$ = "false")
+       comment "Delete account and all profile data"
+       DOSInAnIconUserdel2
+   endif
+
+;----------------------------------------------
+
+; ----------------------------------------------------------------
+; Dos Batch sections
+; ----------------------------------------------------------------
+
+[DOSInAnIconUseradd1]
+net user "$PROP_account$" "$PROP_password$" /add /fullname:"$PROP_account$" /passwordchg:no
+
+[DOSInAnIconUseradd2]
+net user "$PROP_account$" "$PROP_password$" /add /fullname:"$PROP_account$" /passwordchg:yes
+net localgroup Administrators /add "$PROP_account$"
+
+[DOSInAnIconUserdel1]
+net user "$PROP_account$" /delete
+
+[DOSInAnIconUserdel2]
+net user "$PROP_account$" /delete
+rmdir /s /q "%ProfileDir%\$PROP_account$"
+
+
+; ----------------------------------------------------------------
+; ----------------------------------------------------------------
+
+

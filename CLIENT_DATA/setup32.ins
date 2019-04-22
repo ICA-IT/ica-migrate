@@ -1,0 +1,184 @@
+; ----------------------------------------------------------------
+; Copyright (c) uib gmbh (www.uib.de)
+; This sourcecode is owned by uib
+; and published under the Terms of the General Public License.
+; credits: http://www.opsi.org/en/credits/
+; ----------------------------------------------------------------
+
+;****************************************
+; SETUPTYPE      custom
+;****************************************
+; PRODUCTID      ica-migrate
+; SETUPFILE      custom	
+;****************************************
+; LICENSE         false    
+; PRODUCTDESC    Mirgrate user profiles from one machine to another
+
+; PRODUCTNAME    MigrateMan
+; PRODUCTSIZE    9 MB
+; PRODUCTVER     9
+;****************************************
+; SETUPSCRIPT    setup32.ins
+; UNINSSCRIPT    uninstall32.ins
+;****************************************
+; MSIID          
+; USE-MST        
+; INSTALLDIR     c:\USMT
+;****************************************
+; TIMESTAMP      9/25/2018 14:11:02
+;****************************************
+
+[Actions]
+requiredWinstVersion >= "4.11.4.3"
+ScriptErrorMessages = false
+
+DefVar $SetupType$
+DefVar $ProductId$ 
+DefVar $Setupfile$ 
+DefVar $InstallDir$
+DefVar $MinimumSpace$
+DefVar $ExitCode$
+DefVar $ErrorMsg$
+DefVar $LicenseRequired$
+DefVar $LicenseKey$
+DefVar $LicensePool$
+DefVar $MsiId$
+DefVar $NsisInstallBatch$
+DefVar $LogDir$
+DefVar $PROP_debug$
+DefVar $PROP_mode$
+DefVar $PROP_sharename$
+DefVar $PROP_shareUN$
+DefVar $PROP_sharePW$
+DefVar $PROP_username$
+DefVar $PROP_password$
+DefVar $ProductName$
+DefVar $ProductName2$
+
+Set $LogDir$ = "%opsiLogDir%"
+set $PROP_debug$ = GetProductProperty("debug","false")
+set $PROP_mode$ = GetProductProperty("mode","restore")
+set $PROP_sharename$ = GetProductProperty("sharename","\\server\opsi_workbench\dropbox")
+set $PROP_shareUN$ = GetProductProperty("shareUN","dad")
+set $PROP_sharePW$ = GetProductProperty("sharePW","password")
+set $PROP_username$ = GetProductProperty("username","student")
+set $PROP_password$ = GetProductProperty("password","student")
+
+;include_append "%ScriptPath%\check_nsis_exitcode.opsiscript"
+
+; ----------------------------------------------------------------
+Set $SetupType$       = "custom"
+; ----------------------------------------------------------------
+
+; $ProductId$ is the name of the product in opsi, only lower letters, no umlauts, no white spaces, use '-' as a seperator
+Set $ProductId$       = "ica-migrate"
+Set $ProductName$       = "ICA account migration"
+; the path where we find the product after the installation
+Set $InstallDir$      = "c:\USMT"
+Set $LicenseRequired$ = "false"
+Set $MsiId$           = ""
+Set $MinimumSpace$    = "60 MB"
+; ----------------------------------------------------------------
+; ----------------------------------------------------------------
+
+if not(HasMinimumSpace ("%SystemDrive%", $MinimumSpace$))
+   LogError "Not enough space on %SystemDrive%, " + $MinimumSpace$ + " on drive %SystemDrive% needed for " + $ProductId$
+   isFatalError "No Space"
+   ; Stop process and set installation status to failed
+else
+   comment "Show product picture"
+   ShowBitmap "%ScriptPath%\" + $ProductId$ + ".png" $ProductId$
+
+   if FileExists("%ScriptPath%\delsub.ins")
+      comment "Start uninstall sub section"
+  ;    Sub "%ScriptPath%\delsub.ins"
+   endif
+   
+   Message "Installing " + $ProductId$ + " ..."
+   
+
+; Install ============================================================
+   
+   comment "Start setup program"
+   
+	comment "Copy files"
+	Files_install /32Bit
+	   
+; case on mode ============================================================
+; "preview"
+   if ($PROP_mode$ = "preview")
+       comment "Create migration preview file"
+       Message "Generating Preview..."
+       DOSInAnIconMigrate1
+   endif
+
+; "save"
+   if ($PROP_mode$ = "save")
+       comment "Save migration data"
+       Message "Saving User Data..."
+       DOSInAnIconMigrate2
+   endif
+
+; "restore"
+   if ($PROP_mode$ = "restore")
+       comment "Restore migrated data on new machine"
+       Message "Restoring User Data..."
+       DOSInAnIconMigrate3
+   endif
+
+	comment "Remove installed files"
+	Files_uninstall /32Bit
+      ;----------------------------------------------
+;   Sub_check_exitcode
+
+
+; end if on files space   
+endif
+
+; ----------------------------------------------------------------
+; Dos Batch sections
+; ----------------------------------------------------------------
+
+[DOSInAnIconMigrate1]
+; Create migration preview file
+"$InstallDir$\scanstate.exe" /genmigxml:preview.xml
+net use v: $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
+copy preview.xml v:
+net use v: /delete
+
+;net user "$PROP_account$" "$PROP_password$" /add /fullname:"$PROP_account$" /passwordchg:no
+
+[DOSInAnIconMigrate2]
+; Save migration data
+net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$
+v:
+"$InstallDir$\scanstate.exe" v: /ue:* /ui:$PROP_username$ /localonly /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /vsc /o /v:5
+c:
+net use v: /delete
+
+[DOSInAnIconMigrate3]
+; Restore migrated data on new machine
+net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
+v:
+"$InstallDir$\loadstate.exe" v: /ue:* /ui:$PROP_username$ /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /c /lac:$PROP_password$ /lae /v:5
+c:
+net use v: /delete
+
+; ----------------------------------------------------------------
+; Files section
+; ----------------------------------------------------------------
+
+[Files_install]
+; Recursively files into the installation directory:
+;
+ copy -s "%ScriptPath%\files\*.*" "$InstallDir$"
+
+[Files_uninstall]
+; Recursively delete the installation directory:
+;
+ del -sf "$InstallDir$\"
+; ----------------------------------------------------------------
+; ----------------------------------------------------------------
+
+
+

@@ -1,0 +1,56 @@
+[Package]
+version: 1
+depends: 
+incremental: False
+
+[Product]
+type: localboot
+id: ica-migrate
+name: ica-migrate
+description: Mirgrate user profiles from one machine to another
+advice: The user to be migrated should have a share location on \\server.
+version: 1.0
+priority: 0
+licenseRequired: False
+productClasses: 
+setupScript: setup32.ins
+uninstallScript: uninstall32.ins
+updateScript: 
+alwaysScript: 
+onceScript: 
+customScript: 
+userLoginScript: 
+
+[ProductProperty]
+type: unicode
+name: mode
+multivalue: False
+editable: False
+description: New product property
+values: ["preview", "save", "restore"]
+default: ["preview"]
+
+[ProductProperty]
+type: unicode
+name: sharename
+multivalue: False
+editable: True
+description: network share used to store migration data
+values: [""]
+default: ["\\tmp"]
+
+[ProductProperty]
+type: unicode
+name: debug
+multivalue: False
+editable: False
+description: turn on debug of script
+values: ["true", "false"]
+default: ["false"]
+
+[Changelog]
+ica-migrate (1.0-1) stable; urgency=low
+
+Project created with opsi Package Builder 8.2.2
+
+ -- John Kuras <jkuras@islandchristianacademy.com>  Fri, 28 Sep 2018 09:05:26 +0000
