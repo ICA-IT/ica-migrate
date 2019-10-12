@@ -1,4 +1,8 @@
 ; ----------------------------------------------------------------
+; all changes to the original script are:
+; Copyright (c) John Kuras 2019
+; changes made by John Kuras may be copied per WTFPL
+; the origial script is:
 ; Copyright (c) uib gmbh (www.uib.de)
 ; This sourcecode is owned by uib
 ; and published under the Terms of the General Public License.
@@ -54,9 +58,15 @@ DefVar $PROP_username$
 DefVar $PROP_password$
 DefVar $ProductName$
 DefVar $ProductName2$
+DefVar $WinVer$
+DefVar $WinSysType$
+DefVar $WinTypeExt$
+Set $WinVer$ = GetMsVersionInfo
+Set $WinSysType$ = GetSystemType
 
 Set $LogDir$ = "%opsiLogDir%"
 set $PROP_debug$ = GetProductProperty("debug","false")
+;set $PROP_mode$ = GetProductProperty("mode","preview")
 set $PROP_mode$ = GetProductProperty("mode","restore")
 set $PROP_sharename$ = GetProductProperty("sharename","\\server\opsi_workbench\dropbox")
 set $PROP_shareUN$ = GetProductProperty("shareUN","dad")
@@ -64,7 +74,12 @@ set $PROP_sharePW$ = GetProductProperty("sharePW","password")
 set $PROP_username$ = GetProductProperty("username","student")
 set $PROP_password$ = GetProductProperty("password","student")
 
-;include_append "%ScriptPath%\check_nsis_exitcode.opsiscript"
+include_append "%ScriptPath%\check_exitcode.opsiscript"
+
+Set $WinTypeExt$ = "amd64"
+if ($WinSysType$ = "x86 System")
+    Set $WinTypeExt$ = "x86"
+endif   
 
 ; ----------------------------------------------------------------
 Set $SetupType$       = "custom"
@@ -89,11 +104,6 @@ else
    comment "Show product picture"
    ShowBitmap "%ScriptPath%\" + $ProductId$ + ".png" $ProductId$
 
-   if FileExists("%ScriptPath%\delsub.ins")
-      comment "Start uninstall sub section"
-  ;    Sub "%ScriptPath%\delsub.ins"
-   endif
-   
    Message "Installing " + $ProductId$ + " ..."
    
 
@@ -110,6 +120,8 @@ else
        comment "Create migration preview file"
        Message "Generating Preview..."
        DOSInAnIconMigrate1
+       Sub_check_exitcode
+       DOSInAnIconMigrate1a
    endif
 
 ; "save"
@@ -117,6 +129,7 @@ else
        comment "Save migration data"
        Message "Saving User Data..."
        DOSInAnIconMigrate2
+       Sub_check_exitcode
    endif
 
 ; "restore"
@@ -124,6 +137,7 @@ else
        comment "Restore migrated data on new machine"
        Message "Restoring User Data..."
        DOSInAnIconMigrate3
+       Sub_check_exitcode       
    endif
 
 	comment "Remove installed files"
@@ -142,6 +156,9 @@ endif
 [DOSInAnIconMigrate1]
 ; Create migration preview file
 "$InstallDir$\scanstate.exe" /genmigxml:preview.xml
+
+[DOSInAnIconMigrate1a]
+; Copy migration preview file to server
 net use v: $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
 copy preview.xml v:
 net use v: /delete
@@ -171,7 +188,7 @@ net use v: /delete
 [Files_install]
 ; Recursively files into the installation directory:
 ;
- copy -s "%ScriptPath%\files\*.*" "$InstallDir$"
+ copy -s "%ScriptPath%\$WinTypeExt$\*.*" "$InstallDir$"
 
 [Files_uninstall]
 ; Recursively delete the installation directory:

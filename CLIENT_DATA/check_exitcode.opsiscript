@@ -1,0 +1,153 @@
+
+[Sub_check_exitcode]
+
+comment "get the exit code"
+set $ExitCode$ = getLastExitCode
+set $ErrorMsg$ = ""
+
+comment "check the exit code"
+if ($ExitCode$ = "0" OR $ExitCode$ ="1641" OR $ExitCode$ ="3010")
+	comment "non critical Exitcodes"
+	if ($ExitCode$ = "0")
+		comment "ExitCode = "+$ExitCode$+" Action completed successfully."
+	endif
+	if ($ExitCode$ = "1641")
+		comment "ExitCode = "+$ExitCode$+" ERROR_SUCCESS_REBOOT_INITIATED The installer has started a reboot. This error code not available on Windows Installer version 1.0."
+	endif
+	if ($ExitCode$ = "3010")
+		comment "ExitCode = "+$ExitCode$+" ERROR_SUCCESS_REBOOT_REQUIRED A reboot is required to complete the install. This does not include installs where the ForceReboot action is run. This error code not available on Windows Installer version 1.0."
+	endif
+else
+	comment "critical Exitcodes"
+	if ($ExitCode$ = "1")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_DISPLAY_HELP"
+	endif
+	if ($ExitCode$ = "2")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_MEMORY_FAIL"
+	endif
+	if ($ExitCode$ = "3")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_INVALID_PARAMETERS  (Bad command line)"
+	endif
+	if ($ExitCode$ = "4")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_INVALID_STORE_LOCATION"
+	endif
+	if ($ExitCode$ = "5")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_NO_MORE_TOKEN"
+	endif
+	if ($ExitCode$ = "6")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SET_SCRIPTFILES"
+	endif
+	if ($ExitCode$ = "7")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_GET_SCRIPTFILES  (Can\’t find XML file(s) specified in the command-line)"
+	endif
+	if ($ExitCode$ = "8")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SET_STOREPATH"
+	endif
+	if ($ExitCode$ = "9")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SET_USERS"
+	endif
+	if ($ExitCode$ = "10")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_FINDMIGUNITS"
+	endif
+	if ($ExitCode$ = "11")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_DOMIGRATION  (A file is in use)"
+	endif
+	if ($ExitCode$ = "12")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_FAILED_MIGSTARTUP  (Error in XML file \‘Bad XML\’)"
+	endif
+	if ($ExitCode$ = "13")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_FAILED_SETMIGRATIONTYPE"
+	endif
+	if ($ExitCode$ = "14")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_FAILED_LOCALONLY"
+	endif
+	if ($ExitCode$ = "15")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_GET_WORKINGDIR"
+	endif
+	if ($ExitCode$ = "16")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SETKEY"
+	endif
+	if ($ExitCode$ = "17")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_READKEY"
+	endif
+	if ($ExitCode$ = "18")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_TOO_LONG_KEYSTRING"
+	endif
+	if ($ExitCode$ = "19")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SETCOMPRESSION"
+	endif
+	if ($ExitCode$ = "20")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_INSUFFICIENT_RIGHTS"
+	endif
+	if ($ExitCode$ = "21")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_DELETE_STORE"
+	endif
+	if ($ExitCode$ = "22")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SET_BENONADMIN"
+	endif
+	if ($ExitCode$ = "23")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_INSUFFICIENT_STRINGBUFFER"
+	endif
+	if ($ExitCode$ = "24")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_UNSUPPORTED_PLATFORM"
+	endif
+	if ($ExitCode$ = "25")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_UNABLE_TOVERIFY_PLATFORM"
+	endif
+	if ($ExitCode$ = "26")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SET_EFSMODE"
+	endif
+	if ($ExitCode$ = "27")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_INIT_ERROR"
+	endif
+	if ($ExitCode$ = "28")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_SET_LAC_LAE"
+	endif
+	if ($ExitCode$ = "29")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_CORRUPTED_ENCRYPTED_STORE  (Store is encrypted and no or invalid key has been specified)"
+	endif
+	if ($ExitCode$ = "30")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_NO_INVALID_KEY  (Store is only compressed but a key has been specified)"
+	endif
+	if ($ExitCode$ = "31")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_CORRUPTED_NOTENCRYPTED_STORE"
+	endif
+	if ($ExitCode$ = "32")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_LOGFILES_INSIDESTORE"
+	endif
+	if ($ExitCode$ = "33")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_INVALID_PLATFORM_FOR_TARGETXP"
+	endif
+	if ($ExitCode$ = "34")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_STORE_VALID_ONLY_FOR_XP"
+	endif
+	if ($ExitCode$ = "35")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_UNABLE_TO_READ_CONFIG_FILE"
+	endif
+	if ($ExitCode$ = "36")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_INVALID_CONFIG_FILE_FORMAT"
+	endif
+	if ($ExitCode$ = "37")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_UNABLE_CREATE_LOGS"
+	endif
+	if ($ExitCode$ = "38")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_USE_LAC"
+	endif
+	if ($ExitCode$ = "39")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_FAILED_TO_EXCLUDE_FOLDERS"
+	endif
+	if ($ExitCode$ = "40")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_ERROR_UNABLE_CREATE_PROGRESS_LOG"
+	endif
+	if ($ExitCode$ = "41")
+		set $ErrorMsg$ = "ExitCode = "+$ExitCode$+"   USMT_STATUS_CANCELLED"
+	endif
+	if not ($ErrorMsg$ = "")
+		logError $ErrorMsg$
+		isFatalError "USMT failed"
+	else
+		logError "Unknown USMT Error: Exitcode = "+$ExitCode$
+		isFatalError "Unknown Exitcode"
+	endif
+endif
+

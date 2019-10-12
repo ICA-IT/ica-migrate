@@ -8,7 +8,7 @@ id: ica-migrate
 name: ica-migrate
 description: Mirgrate user profiles from one machine to another
 advice: The user to be migrated should have a share location on \\server.
-version: 1.0
+version: 1.1
 priority: 0
 licenseRequired: False
 productClasses: 
