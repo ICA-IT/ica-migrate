@@ -1,6 +1,7 @@
 [Package]
-version: 1.corr1corr
+version: 1
 depends: 
+incremental: False
 
 [Product]
 type: localboot
@@ -8,6 +9,7 @@ id: ica-migrate
 name: ica-migrate
 description: Mirgrate user profiles from one machine to another
 advice: The user to be migrated should have a share location on \\server.
+
 version: 1.1
 priority: 0
 licenseRequired: False
@@ -26,8 +28,8 @@ name: move_username
 multivalue: False
 editable: True
 description: Specifies a new user name for the specified user. (specify change as "OldDomain\OldUserName:[NewDomain\]NewUserName", set to "none" to turn off)
-values: ["none"]
-default: ["none"]
+values: [""]
+default: [""]
 
 [ProductProperty]
 type: unicode
@@ -85,8 +87,8 @@ type: unicode
 name: mode
 multivalue: False
 editable: False
-description: Task; ==preview -> Create migration preview file; ==save -> Save migration data to server; ==restore -> Restore migrated data on new machine; ==delete -> delete the migration data from server)
-values: ["delete", "preview", "restore", "save"]
+description: New product property
+values: ["preview", "restore", "save"]
 default: ["preview"]
 
 [ProductProperty]
@@ -96,7 +98,7 @@ multivalue: False
 editable: True
 description: network share used to store migration data
 values: ["\\\\server\\dropbox"]
-default: []
+default: [""]
 
 [ProductProperty]
 type: unicode

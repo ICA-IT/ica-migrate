@@ -55,12 +55,18 @@ DefVar $PROP_sharename$
 DefVar $PROP_shareUN$
 DefVar $PROP_sharePW$
 DefVar $PROP_username$
+DefVar $PROP_move_username$
+DefVar $PROP_move_domain$
+DefVar $PROP_overwrite_store$
 DefVar $PROP_password$
 DefVar $ProductName$
 DefVar $ProductName2$
 DefVar $WinVer$
 DefVar $WinSysType$
 DefVar $WinTypeExt$
+DefVar $mu$
+DefVar $md$
+DefVar $ocerwrite$
 Set $WinVer$ = GetMsVersionInfo
 Set $WinSysType$ = GetSystemType
 
@@ -73,6 +79,9 @@ set $PROP_shareUN$ = GetProductProperty("shareUN","dad")
 set $PROP_sharePW$ = GetProductProperty("sharePW","password")
 set $PROP_username$ = GetProductProperty("username","student")
 set $PROP_password$ = GetProductProperty("password","student")
+set $PROP_move_username$ = GetProductProperty("move_username","none")
+set $PROP_move_domain$ = GetProductProperty("move_domain","none")
+set $PROP_overwrite_store$ = GetProductProperty("overwrite_store","false")
 
 include_append "%ScriptPath%\check_exitcode.opsiscript"
 
@@ -114,6 +123,28 @@ else
 	comment "Copy files"
 	Files_install /32Bit
 	   
+; prepare args ============================================================
+; /mu
+	if ( $PROP_move_username$ = "none" )
+		Set $mu$	= ""
+	else
+		Set $mu$	= "/mu" + $PROP_move_username$
+	endif
+	
+; /md
+	if ( $PROP_move_domain$ = "none" )
+		Set $md$	= ""
+	else
+		Set $md$	= "/md" + $PROP_move_domain$
+	endif
+	
+; /o
+	if ( $PROP_overwrite_store$ = "false" )
+		Set $ocerwrite$	= ""
+	else
+		Set $ocerwrite$	= "/o"
+	endif
+
 ; case on mode ============================================================
 ; "preview"
    if ($PROP_mode$ = "preview")
@@ -139,6 +170,15 @@ else
        Message "Restoring User Data..."
        DOSInAnIconMigrate3
        Sub_check_exitcode   
+       DOSInAnIconMigrate3a
+   endif
+
+; "delete"
+   if ($PROP_mode$ = "delete")
+       comment "Delete the saved migration data from the server"
+       Message "Deleting User Data..."
+       DOSInAnIconMigrate4
+       Files_delete
        DOSInAnIconMigrate3a
    endif
 
@@ -173,7 +213,7 @@ net use v: /delete
 ; Save migration data
 net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$
 v:
-"$InstallDir$\scanstate.exe" v: /ue:* /ui:$PROP_username$ /localonly /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /vsc /o /v:5
+"$InstallDir$\scanstate.exe" v: /ue:* /ui:$PROP_username$ /localonly /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /vsc $ocerwrite$ /v:5
 
 [DOSInAnIconMigrate2a]
 ; Delete the share that the data was saved on
@@ -184,13 +224,17 @@ net use v: /delete
 ; Restore migrated data on new machine
 net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
 v:
-"$InstallDir$\loadstate.exe" v: /ue:* /ui:$PROP_username$ /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /c /lac:$PROP_password$ /lae /v:5
-
+"$InstallDir$\loadstate.exe" v: /ue:* /ui:$PROP_username$ $md$ $mu$ /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /c /lac:$PROP_password$ /lae /v:5
 
 [DOSInAnIconMigrate3a]
 ; Delete the share that the restored data is saved on 
 c:
 net use v: /delete
+
+[DOSInAnIconMigrate4]
+; Delete migration data
+net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$
+v:
 
 ; ----------------------------------------------------------------
 ; Files section
@@ -205,6 +249,12 @@ net use v: /delete
 ; Recursively delete the installation directory:
 ;
  del -sf "$InstallDir$\"
+ 
+[Files_delete]
+; Recursively delete the migration data directory:
+;
+ del -sf "USMT\"
+ del -f "scanstate.log"
 ; ----------------------------------------------------------------
 ; ----------------------------------------------------------------
 
