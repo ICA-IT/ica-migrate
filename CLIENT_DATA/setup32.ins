@@ -27,7 +27,7 @@
 ;****************************************
 ; MSIID          
 ; USE-MST        
-; INSTALLDIR     c:\USMT
+; INSTALLDIR     %SystemDrive%\USMT
 ;****************************************
 ; TIMESTAMP      9/25/2018 14:11:02
 ;****************************************
@@ -98,7 +98,7 @@ Set $SetupType$       = "custom"
 Set $ProductId$       = "ica-migrate"
 Set $ProductName$       = "ICA account migration"
 ; the path where we find the product after the installation
-Set $InstallDir$      = "c:\USMT"
+Set $InstallDir$      = "%SystemDrive%\USMT"
 Set $LicenseRequired$ = "false"
 Set $MsiId$           = ""
 Set $MinimumSpace$    = "60 MB"
@@ -153,6 +153,15 @@ else
        DOSInAnIconMigrate1
        Sub_check_exitcode
        DOSInAnIconMigrate1a
+   endif
+
+; "genconfig"
+   if ($PROP_mode$ = "genconfig")
+       comment "Generate configuration file"
+       Message "Generating Configuration..."
+       DOSInAnIconMigrate5
+       Sub_check_exitcode
+       DOSInAnIconMigrate5a
    endif
 
 ; "save"
@@ -217,7 +226,7 @@ v:
 
 [DOSInAnIconMigrate2a]
 ; Delete the share that the data was saved on
-c:
+%SystemDrive%
 net use v: /delete
 
 [DOSInAnIconMigrate3]
@@ -228,13 +237,26 @@ v:
 
 [DOSInAnIconMigrate3a]
 ; Delete the share that the restored data is saved on 
-c:
+%SystemDrive%
 net use v: /delete
 
 [DOSInAnIconMigrate4]
 ; Delete migration data
 net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$
 v:
+
+[DOSInAnIconMigrate5]
+; Create configuration file
+cd "$InstallDir$"
+"$InstallDir$\scanstate.exe"  /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /genconfig:config.xml
+
+[DOSInAnIconMigrate5a]
+; Copy configuration file to server
+cd "$InstallDir$"
+net use v: $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
+copy config.xml v:
+net use v: /delete
+
 
 ; ----------------------------------------------------------------
 ; Files section
