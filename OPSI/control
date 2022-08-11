@@ -1,5 +1,5 @@
 [Package]
-version: 1.corr1corr
+version: 1
 depends: 
 
 [Product]
@@ -8,7 +8,7 @@ id: ica-migrate
 name: ica-migrate
 description: Mirgrate user profiles from one machine to another
 advice: The user to be migrated should have a share location on \\server.
-version: 1.1
+version: 1.2
 priority: 0
 licenseRequired: False
 productClasses: 

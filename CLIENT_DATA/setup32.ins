@@ -50,6 +50,7 @@ DefVar $MsiId$
 DefVar $NsisInstallBatch$
 DefVar $LogDir$
 DefVar $PROP_debug$
+DefVar $localSave$
 DefVar $PROP_mode$
 DefVar $PROP_sharename$
 DefVar $PROP_shareUN$
@@ -145,6 +146,13 @@ else
 		Set $ocerwrite$	= "/o"
 	endif
 
+; local vs. remote save
+	if ( $PROP_shareUN$ = "none" )
+		Set $localSave$	= "yes"
+	else
+		Set $localSave$	= "no"
+	endif
+
 ; case on mode ============================================================
 ; "preview"
    if ($PROP_mode$ = "preview")
@@ -152,7 +160,11 @@ else
        Message "Generating Preview..."
        DOSInAnIconMigrate1
        Sub_check_exitcode
-       DOSInAnIconMigrate1a
+       if ($localSave$ = "yes")
+          DOSInAnIconMigrate1b
+       else
+          DOSInAnIconMigrate1a
+       endif
    endif
 
 ; "genconfig"
@@ -161,34 +173,53 @@ else
        Message "Generating Configuration..."
        DOSInAnIconMigrate5
        Sub_check_exitcode
-       DOSInAnIconMigrate5a
+       if ($localSave$ = "yes")
+          DOSInAnIconMigrate5b
+       else
+          DOSInAnIconMigrate5a
+       endif
    endif
 
 ; "save"
    if ($PROP_mode$ = "save")
        comment "Save migration data"
        Message "Saving User Data..."
-       DOSInAnIconMigrate2
-       Sub_check_exitcode
-       DOSInAnIconMigrate2a
+       if ($localSave$ = "yes")
+          DOSInAnIconMigrate2b
+          Sub_check_exitcode
+       else
+          DOSInAnIconMigrate2
+          Sub_check_exitcode
+          DOSInAnIconMigrate2a
+       endif
    endif
 
 ; "restore"
    if ($PROP_mode$ = "restore")
        comment "Restore migrated data on new machine"
        Message "Restoring User Data..."
-       DOSInAnIconMigrate3
-       Sub_check_exitcode   
-       DOSInAnIconMigrate3a
+       if ($localSave$ = "yes")
+          DOSInAnIconMigrate3b
+          Sub_check_exitcode   
+       else
+          DOSInAnIconMigrate3
+          Sub_check_exitcode   
+          DOSInAnIconMigrate3a
+       endif
    endif
 
 ; "delete"
    if ($PROP_mode$ = "delete")
        comment "Delete the saved migration data from the server"
        Message "Deleting User Data..."
-       DOSInAnIconMigrate4
-       Files_delete
-       DOSInAnIconMigrate3a
+       if ($localSave$ = "yes")
+          DOSInAnIconMigrate4b
+          Files_deleteb
+       else   
+          DOSInAnIconMigrate4
+          Files_delete
+          DOSInAnIconMigrate3a
+       endif
    endif
 
 	comment "Remove installed files"
@@ -216,6 +247,11 @@ net use v: $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$
 copy preview.xml v:
 net use v: /delete
 
+[DOSInAnIconMigrate1b]
+; Copy migration preview file to local dir
+cd "$InstallDir$"
+copy preview.xml $PROP_sharename$
+
 ;net user "$PROP_account$" "$PROP_password$" /add /fullname:"$PROP_account$" /passwordchg:no
 
 [DOSInAnIconMigrate2]
@@ -229,6 +265,12 @@ v:
 %SystemDrive%
 net use v: /delete
 
+[DOSInAnIconMigrate2b]
+; Save migration preview file to local dir
+cd "$PROP_sharename$"
+"$InstallDir$\scanstate.exe" $PROP_sharename$ /ue:* /ui:$PROP_username$ /localonly /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /vsc $ocerwrite$ /v:5
+
+
 [DOSInAnIconMigrate3]
 ; Restore migrated data on new machine
 net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
@@ -240,10 +282,20 @@ v:
 %SystemDrive%
 net use v: /delete
 
+[DOSInAnIconMigrate3b]
+; Restore migrated data on the local machine
+cd "$PROP_sharename$"
+"$InstallDir$\loadstate.exe" $PROP_sharename$ /ue:* /ui:$PROP_username$ $md$ $mu$ /i:$InstallDir$\MigApp.xml /i:$InstallDir$\MigDocs.xml /i:$InstallDir$\MigUser.xml /c /lac:$PROP_password$ /lae /v:5
+
+
 [DOSInAnIconMigrate4]
 ; Delete migration data
 net use v:  $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$
 v:
+
+[DOSInAnIconMigrate4b]
+; Delete migration data on local machine
+cd "$PROP_sharename$"
 
 [DOSInAnIconMigrate5]
 ; Create configuration file
@@ -256,6 +308,11 @@ cd "$InstallDir$"
 net use v: $PROP_sharename$ $PROP_sharePW$ /persistent:no /user:$PROP_shareUN$ 
 copy config.xml v:
 net use v: /delete
+
+[DOSInAnIconMigrate5b]
+; Copy migration preview file to local dir
+cd "$InstallDir$"
+copy config.xml $PROP_sharename$
 
 
 ; ----------------------------------------------------------------
@@ -277,6 +334,13 @@ net use v: /delete
 ;
  del -sf "v:\USMT\"
  del -f "v:\scanstate.log"
+ 
+[Files_deleteb]
+; Recursively delete the migration data directory:
+;
+ cd "$PROP_sharename$"
+ del -sf "USMT\"
+ del -f "scanstate.log"
 ; ----------------------------------------------------------------
 ; ----------------------------------------------------------------
 
