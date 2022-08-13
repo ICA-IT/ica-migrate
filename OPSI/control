@@ -6,8 +6,8 @@ depends:
 type: localboot
 id: ica-migrate
 name: ica-migrate
-description: Mirgrate user profiles from one machine to another
-advice: The user to be migrated should have a share location on \\server.
+description: Migrate user profiles from one machine to another
+advice: The user to be migrated should have a share location on \\server or use a local file folder by specifying the shareun parameter as "none".
 version: 1.2
 priority: 0
 licenseRequired: False
@@ -76,7 +76,7 @@ type: unicode
 name: shareun
 multivalue: False
 editable: True
-description: Username to access the migration store share
+description: Username to access the migration store share (set to "none" if saving to a local folder)
 values: ["student"]
 default: ["student"]
 
@@ -94,7 +94,7 @@ type: unicode
 name: sharename
 multivalue: False
 editable: True
-description: network share used to store migration data
+description: network share used to store migration data (or a local folder if shareun == "none")
 values: ["\\\\server\\dropbox"]
 default: []
 
